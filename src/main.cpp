@@ -6,7 +6,7 @@
 
 int main(int argc, char* argv[]) {
     std::cout << "VulneraTestX - Modern C++ Binary Fuzzing and Analysis Tool\n";
-    std::cout << "Version: 0.1.0\n";
+    std::cout << "Version: 0.2.0\n";
 
     if (argc < 2) {
         std::cerr << "Usage: " << argv[0] << " <target_executable_path> [num_iterations]\n";
