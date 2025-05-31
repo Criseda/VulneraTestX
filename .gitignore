@@ -97,6 +97,7 @@ gtest_output.xml
 *.temp
 .DS_Store
 Thumbs.db
+.cache*
 
 # IDE files
 *.swp
