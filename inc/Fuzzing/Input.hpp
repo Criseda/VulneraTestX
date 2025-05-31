@@ -5,6 +5,7 @@
 #include <iterator>
 #include <string>
 #include <vector>
+#include <random>
 
 namespace VulneraTextX::Fuzzing {
     class Input {
@@ -34,9 +35,14 @@ namespace VulneraTextX::Fuzzing {
 
         bool empty() const;
 
+        // Ref to the internal vector
         const std::vector<std::uint8_t>& getVector() const;
 
+        // Mutates input data using bit flip
+        void mutate();
     private:
         std::vector<std::uint8_t> m_data;
+
+        static std::mt19937 s_randomEngine; // Random number generator
     };
 } // namespace VulneraTextX::Fuzzing

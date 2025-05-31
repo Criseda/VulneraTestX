@@ -1,5 +1,7 @@
 #include <algorithm>
+#include <chrono>
 #include <iterator>
+#include <random>
 
 #include <Fuzzing/Input.hpp>
 
@@ -58,5 +60,27 @@ namespace VulneraTextX::Fuzzing {
 
     const std::vector<std::uint8_t>& Input::getVector() const {
         return m_data;
+    }
+
+    // Mutate implementation
+    void Input::mutate() {
+        if (m_data.empty()) {
+            return;
+        }
+
+        // Thread-Local Random Engine
+        static thread_local std::mt19937 s_randomEngine(
+            static_cast<unsigned int>(std::chrono::steady_clock::now().time_since_epoch().count()));
+
+        // Select random byte
+        std::uniform_int_distribution<size_t> byte_dist(0, m_data.size() - 1);
+        size_t byte_idx = byte_dist(s_randomEngine);
+
+        // Select random bit in byte_idx
+        std::uniform_int_distribution<int> bit_dist(0, 7);
+        int bit_idx = bit_dist(s_randomEngine);
+
+        // Flip bit
+        m_data[byte_idx] ^= (1 << bit_idx);
     }
 } // namespace VulneraTextX::Fuzzing

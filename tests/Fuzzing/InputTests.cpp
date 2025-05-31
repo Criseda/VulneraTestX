@@ -14,6 +14,8 @@ namespace VulneraTextX::Tests {
         static void TearDownTestSuite() {}
     };
 
+    // Base tests for Input class
+
     TEST_F(InputTests, CanCreateEmptyInput) {
         Fuzzing::Input input;
         EXPECT_EQ(input.size(), 0);
@@ -126,5 +128,78 @@ namespace VulneraTextX::Tests {
         for (size_t i = 0; i < vecData1.size(); ++i) {
             EXPECT_EQ(input1.data()[i], vecData1[i]);
         }
+    }
+
+    // Mutate tests
+
+    TEST_F(InputTests, MutateEmptyInput) {
+        Fuzzing::Input input;
+        EXPECT_NO_THROW(input.mutate()); // Should not throw or crash
+        EXPECT_EQ(input.size(), 0);
+        EXPECT_TRUE(input.empty());
+    }
+
+    TEST_F(InputTests, MutatePreservesSize) {
+        std::vector<uint8_t> vecData = {0x01, 0x02, 0x03, 0x04, 0x05};
+        Fuzzing::Input input(vecData);
+        size_t originalSize = input.size();
+
+        input.mutate();
+
+        EXPECT_EQ(input.size(), originalSize);
+    }
+
+    TEST_F(InputTests, MutateChangesData) {
+        // Use a sufficiently large input to increase chance of observable change
+        std::vector<uint8_t> vecData(10, 0xAA); // 10 bytes, all 0xAA
+        Fuzzing::Input input(vecData);
+        std::vector<uint8_t> originalDataCopy = input.getVector(); // Make a copy for comparison
+
+        // Mutate a few times to ensure a high probability of change
+        bool changed = false;
+        for (int i = 0; i < 10; ++i) { // Try mutating up to 10 times
+            input.mutate();
+            if (input.getVector() != originalDataCopy) {
+                changed = true;
+                break;
+            }
+            // If it didn't change, restore to original for next attempt,
+            // as a bit flip can flip back.
+            input = Fuzzing::Input(originalDataCopy);
+        }
+
+        if (vecData.empty()) { // If original data was empty, it can't change.
+            EXPECT_EQ(input.getVector(), originalDataCopy);
+        } else {
+            EXPECT_TRUE(changed) << "Input data did not change after 10 mutation attempts.";
+        }
+    }
+
+    TEST_F(InputTests, MutateCanProduceDifferentResults) {
+        std::vector<uint8_t> vecData = {0x00, 0x00, 0x00, 0x00}; // Start with all zeros
+        Fuzzing::Input input(vecData);
+
+        // Store results of several mutations.
+        // Using std::set to see if we get unique mutated inputs.
+        // A std::vector<std::vector<uint8_t>> would also work.
+        std::set<std::vector<uint8_t>> mutationResults;
+        const int mutationAttempts       = 20; // Number of times to mutate and record
+        const int expectedUniqueOutcomes = 3; // Expect at least a few different outcomes
+
+        if (input.empty()) {
+            SUCCEED() << "Skipping test for empty input as it cannot be meaningfully mutated to different results.";
+            return;
+        }
+
+        for (int i = 0; i < mutationAttempts; ++i) {
+            Fuzzing::Input currentInput(vecData); // Start from the same original state
+            currentInput.mutate();
+            mutationResults.insert(currentInput.getVector());
+        }
+
+        // This test is probabilistic. It's possible, though unlikely with enough attempts
+        // on non-trivial input, to get fewer unique results than expected.
+        EXPECT_GE(mutationResults.size(), std::min((size_t) expectedUniqueOutcomes, vecData.size() * 8))
+            << "Mutation did not produce a variety of outcomes. Got " << mutationResults.size() << " unique results.";
     }
 } // namespace VulneraTextX::Tests
