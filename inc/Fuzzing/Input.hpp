@@ -3,9 +3,9 @@
 #include <algorithm>
 #include <cstdint>
 #include <iterator>
+#include <random>
 #include <string>
 #include <vector>
-#include <random>
 
 namespace VulneraTextX::Fuzzing {
     class Input {
@@ -40,6 +40,8 @@ namespace VulneraTextX::Fuzzing {
 
         // Mutates input data using bit flip
         void mutate();
+
+    protected:
     private:
         std::vector<std::uint8_t> m_data;
 
