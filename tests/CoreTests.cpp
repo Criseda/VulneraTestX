@@ -1,5 +1,6 @@
-#include <VulneraTestX.hpp>
 #include <gtest/gtest.h>
+
+#include <VulneraTestX.hpp>
 
 namespace VulneraTestX::Tests {
     TEST(CoreTests, InitializeTest) {

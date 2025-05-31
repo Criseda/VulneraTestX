@@ -1,5 +1,6 @@
-#include <VulneraTestX.hpp>
 #include <iostream>
+
+#include <VulneraTestX.hpp>
 
 int main() {
     std::cout << "VulneraTestX - Modern C++ Binary Fuzzing and Analysis Tool\n";

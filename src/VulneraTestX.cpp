@@ -1,5 +1,6 @@
-#include <VulneraTestX.hpp>
 #include <iostream>
+
+#include <VulneraTestX.hpp>
 
 namespace VulneraTestX {
     void Core::Initialize() {
