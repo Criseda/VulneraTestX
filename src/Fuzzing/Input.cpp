@@ -5,7 +5,7 @@
 
 #include <Fuzzing/Input.hpp>
 
-namespace VulneraTextX::Fuzzing {
+namespace VulneraTestX::Fuzzing {
     Input::Input() : m_data() {}
 
     Input::Input(const std::vector<std::uint8_t>& data) : m_data(data) {}
@@ -83,4 +83,4 @@ namespace VulneraTextX::Fuzzing {
         // Flip bit
         m_data[byte_idx] ^= (1 << bit_idx);
     }
-} // namespace VulneraTextX::Fuzzing
+} // namespace VulneraTestX::Fuzzing

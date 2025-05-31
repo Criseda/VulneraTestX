@@ -5,7 +5,7 @@
 
 #include <Fuzzing/Input.hpp>
 
-namespace VulneraTextX::Tests {
+namespace VulneraTestX::Tests {
 
     class InputTests : public ::testing::Test {
     protected:
@@ -202,4 +202,4 @@ namespace VulneraTextX::Tests {
         EXPECT_GE(mutationResults.size(), std::min((size_t) expectedUniqueOutcomes, vecData.size() * 8))
             << "Mutation did not produce a variety of outcomes. Got " << mutationResults.size() << " unique results.";
     }
-} // namespace VulneraTextX::Tests
+} // namespace VulneraTestX::Tests

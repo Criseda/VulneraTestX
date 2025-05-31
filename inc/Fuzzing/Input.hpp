@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace VulneraTextX::Fuzzing {
+namespace VulneraTestX::Fuzzing {
     class Input {
     public:
         Input();
@@ -47,4 +47,4 @@ namespace VulneraTextX::Fuzzing {
 
         static std::mt19937 s_randomEngine; // Random number generator
     };
-} // namespace VulneraTextX::Fuzzing
+} // namespace VulneraTestX::Fuzzing
