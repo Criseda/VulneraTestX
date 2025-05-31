@@ -1,5 +1,6 @@
 #include <cstdint>
 #include <gtest/gtest.h>
+#include <set>
 #include <string>
 #include <vector>
 
