@@ -1,0 +1,56 @@
+# Based on Microsoft STL .clang-format
+
+---
+BasedOnStyle: LLVM
+AccessModifierOffset: -4
+AlignAfterOpenBracket: DontAlign
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveMacros: Consecutive
+AlignEscapedNewlines: Left
+AlignOperands: AlignAfterOperator
+AlignTrailingComments:
+  Kind: Never
+
+AllowBreakBeforeNoexceptSpecifier: OnlyWithParen
+AllowShortFunctionsOnASingleLine: Empty
+
+BreakAfterAttributes: Never
+BreakBeforeBinaryOperators: NonAssignment
+BreakTemplateDeclarations: Yes
+
+ColumnLimit: 120
+
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^<(yvals|yvals_core)\.h>$'
+    Priority: 10
+  - Regex: '^<__msvc_.*\.hpp>$'
+    Priority: 20
+  - Regex: '\.hpp[>"]$'
+    Priority: 40
+  - Regex: '.*'
+    Priority: 20
+
+IndentCaseBlocks: true
+IndentWidth: 4
+IndentWrappedFunctionNames: true
+
+InsertBraces: true
+InsertNewlineAtEOF: true
+
+KeepEmptyLines:
+  AtStartOfFile: false
+
+MaxEmptyLinesToKeep: 2
+NamespaceIndentation: All
+
+PointerAlignment: Left
+
+RemoveSemicolon: true
+
+SpaceAfterCStyleCast: true
+SpaceBeforeParens: Custom
+SpaceBeforeParensOptions:
+  AfterRequiresInClause: true
+
+# Standard: Latest

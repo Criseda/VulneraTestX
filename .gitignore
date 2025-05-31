@@ -30,3 +30,84 @@
 *.exe
 *.out
 *.app
+
+# Build directories
+/Build/
+/build/
+/builds/
+/out/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps/
+
+# vcpkg
+vcpkg_installed/
+.vcpkg-root
+
+# Visual Studio
+.vs/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
+
+# Coverage reports
+coverage/
+*.gcov
+*.gcda
+*.gcno
+
+# Profiling
+*.prof
+callgrind.out.*
+perf.data*
+
+# Sanitizer outputs
+*.asan
+*.ubsan
+*.tsan
+
+# Test outputs
+Testing/
+test_results/
+gtest_output.xml
+
+# Package files
+*.deb
+*.rpm
+*.tar.gz
+*.zip
+
+# Logs
+*.log
+
+# Temporary files
+*~
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# IDE files
+*.swp
+*.swo
+*~
+
+# Conan (if you ever use it)
+conandata.txt
+conaninfo.txt
+conanbuildinfo.*
+
+# GitHub Actions (keep workflows)
+!.github/
+!.github/workflows/
