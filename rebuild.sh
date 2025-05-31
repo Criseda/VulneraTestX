@@ -2,13 +2,13 @@
 set -e
 
 echo "Cleaning build directory..."
-rm -rf Build/*
+rm -rf build/*
 
 echo "Creating build directory if it doesn't exist..."
-mkdir -p Build
+mkdir -p build
 
 echo "Configuring with CMake..."
-cd Build
+cd build
 cmake ..
 
 echo "Building project..."

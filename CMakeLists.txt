@@ -7,7 +7,7 @@ endif()
 
 # Project Config
 project(VulneraTestX
-    VERSION 0.1.0
+    VERSION 0.2.0
     DESCRIPTION "Modern C++ Binary Fuzzing and Analysis Tool"
     LANGUAGES CXX
 )
@@ -76,7 +76,7 @@ foreach(TARGET_SOURCE ${TARGET_SOURCES})
     add_executable(${TARGET_NAME} ${TARGET_SOURCE})
     set_target_properties(${TARGET_NAME}
         PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Targets
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/targets
     )
 endforeach()
 
