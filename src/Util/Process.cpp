@@ -115,7 +115,44 @@ namespace VulneraTestX::Util {
 
             if (!environment_map.empty()) {
                 build_envp(environment_map, env_storage, envp_c);
+#ifdef __APPLE__
+                // macOS doesn't have execvpe, so we need to resolve path manually
+                std::string resolved_path = executablePath;
+                if (executablePath.find('/') == std::string::npos) {
+                    // Search in PATH
+                    const char* path_env = getenv("PATH");
+                    if (path_env) {
+                        std::string path_str(path_env);
+                        size_t start = 0;
+                        size_t end = 0;
+                        
+                        while ((end = path_str.find(':', start)) != std::string::npos) {
+                            std::string dir = path_str.substr(start, end - start);
+                            std::string full_path = dir + "/" + executablePath;
+                            
+                            if (access(full_path.c_str(), X_OK) == 0) {
+                                resolved_path = full_path;
+                                break;
+                            }
+                            start = end + 1;
+                        }
+                        
+                        // Check last directory
+                        if (resolved_path == executablePath && start < path_str.length()) {
+                            std::string dir = path_str.substr(start);
+                            std::string full_path = dir + "/" + executablePath;
+                            
+                            if (access(full_path.c_str(), X_OK) == 0) {
+                                resolved_path = full_path;
+                            }
+                        }
+                    }
+                }
+                execve(resolved_path.c_str(), argv_c.data(), envp_c.data());
+#else
+                // Linux and other systems have execvpe
                 execvpe(executablePath.c_str(), argv_c.data(), envp_c.data());
+#endif
             } else {
                 // If environment_map is empty, use execvp to inherit parent's environment
                 execvp(executablePath.c_str(), argv_c.data());
