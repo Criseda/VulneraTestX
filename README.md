@@ -41,6 +41,7 @@ Modern C++ Binary Fuzzing and Analysis Tool for Linux binaries.
 - CMake 3.16+
 - GCC with C++20 support
 - vcpkg package manager
+- pkg-config for library dependencies
 
 ## Building
 
