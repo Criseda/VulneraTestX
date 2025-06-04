@@ -1,9 +1,12 @@
+#include <cstdio>
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cctype> // For isprint
 
 #include <Fuzzing/Input.hpp>
 #include <Util/Process.hpp>
+#include <Util/SanitizerDetector.hpp>
 #include <VulneraTestX.hpp>
 
 namespace VulneraTestX {
@@ -16,67 +19,68 @@ namespace VulneraTestX {
         std::cout << "Starting fuzzing on target: " << targetExecutablePath << " for " << numIterations
                   << " iterations.\n";
 
-        // Create an initial seed input. This could be more sophisticated later (e.g., from a file or corpus).
-        // For now, let's start with a simple, non-empty string.
-        Fuzzing::Input currentInput("initial_seed_data_123");
+        // 1. Use a longer initial seed input, capable of overflowing a 64-byte buffer
+        std::string longSeed(100, 'A'); // 100 'A' characters
+        Fuzzing::Input currentInput(longSeed);
 
         for (int i = 0; i < numIterations; ++i) {
-            // 1. Mutate the current input
-            currentInput.mutate();
+            currentInput.mutate(); // Mutate input
 
-            // 2. Prepare data for the process execution
-            // The Process::execute expects std::string for stdin.
-            // Input::getVector() returns std::vector<uint8_t>.
             const std::vector<uint8_t>& inputDataVec = currentInput.getVector();
-            std::string stdInDataString(inputDataVec.begin(), inputDataVec.end());
+            // Convert the mutated data to a string to be used as a command-line argument
+            std::string mutatedArgString(inputDataVec.begin(), inputDataVec.end());
 
-            // 3. Prepare arguments for the target.
-            // For many programs, the input can be passed via stdin.
-            // If the target expects input via command-line arguments, this would be different.
-            // The first argument (argv[0]) is typically the program name itself.
-            std::vector<std::string> arguments = {targetExecutablePath};
-
-            // Example: If target took fuzzed input as its first real argument:
-            // std::vector<std::string> arguments = {targetExecutablePath, stdInDataString};
-            // And then stdInDataString for Process::execute would be empty if input is via args.
-            // For now, assuming stdin.
+            // 2. Prepare arguments to pass the mutated input as argv[1]
+            std::vector<std::string> arguments = {
+                targetExecutablePath, // argv[0] is the program name/path
+                mutatedArgString // argv[1] is our fuzzed input
+            };
 
             std::cout << "\n[Iteration " << i + 1 << "/" << numIterations << "]" << std::endl;
-            std::cout << "Feeding input (size " << currentInput.size() << "): ";
-            for (size_t k = 0; k < currentInput.size() && k < 16; ++k) { // Print first few bytes
-                printf("%02x ", inputDataVec[k]);
+            // For command-line args, printing the full arg might be too verbose if very long.
+            // Let's print its size and a snippet.
+            std::cout << "Feeding input as argv[1] (size " << mutatedArgString.length() << "): ";
+            for (size_t k = 0; k < mutatedArgString.length() && k < 16; ++k) {
+                // Crude print for potentially non-printable chars in arg string
+                if (isprint(static_cast<unsigned char>(mutatedArgString[k]))) {
+                    std::cout << mutatedArgString[k];
+                } else {
+                    printf("\\x%02x", static_cast<unsigned char>(mutatedArgString[k]));
+                }
             }
-            if (currentInput.size() > 16) {
+            if (mutatedArgString.length() > 16) {
                 std::cout << "...";
             }
             std::cout << std::endl;
 
+            // 3. Execute the target, passing an empty string for stdin since input is now via argv
+            Util::ProcessResult result = Util::Process::execute(targetExecutablePath, arguments, "" /* Empty stdin */);
 
-            // 4. Execute the target
-            Util::ProcessResult result = Util::Process::execute(targetExecutablePath, arguments, stdInDataString);
-
-            // 5. Report results (basic for now)
             std::cout << "Target Executed." << std::endl;
-            std::cout << "  Exit Code: " << result.exitCode << (result.success ? " (Success)" : " (Failed/Crashed?)")
+            std::cout << "  Exit Code: " << result.exitCode << (result.success ? " (Success)" : " (Failure/Error)")
                       << std::endl;
+
             if (!result.stdOut.empty()) {
-                std::cout << "  Stdout:\n" << result.stdOut << std::endl;
+                std::cout << "  Stdout:\n<<<\n" << result.stdOut << "\n>>>" << std::endl;
             }
             if (!result.stdErr.empty()) {
-                std::cout << "  Stderr:\n" << result.stdErr << std::endl;
+                std::cout << "  Stderr:\n<<<\n" << result.stdErr << "\n>>>" << std::endl;
             }
 
-            // Basic crash detection
-            // On Linux, crashes due to signals often result in exit codes > 128.
-            // SIGSEGV is 11, so exit code 128+11 = 139.
-            // SIGABRT is 6, so exit code 128+6 = 134.
-            // ASan/USan might use specific exit codes or print to stderr.
-            if (!result.success && result.exitCode != 0) {
-                // This is a very naive check. Real crash detection is more complex.
-                // e.g. checking for specific signals if WIFSIGNALED(status) was true in Process.cpp
-                // or parsing ASan output from stderr.
-                std::cout << "  !!! POTENTIAL CRASH OR ERROR DETECTED !!!" << std::endl;
-                // TODO: for later, you'd save the 'currentInput' that caused this.
+            Util::SanitizerIssue issue = Util::SanitizerDetector::detectIssue(result.stdErr);
+
+            if (issue.detected) {
+                std::cout << "  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+                std::cout << "  !!! SANITIZER ISSUE DETECTED !!!" << std::endl;
+                std::cout << "  Sanitizer: " << issue.sanitizerName << std::endl;
+                std::cout << "  Error Type: " << issue.errorType << std::endl;
+                if (!issue.summaryLine.empty()) {
+                    std::cout << "  Key Line: " << issue.summaryLine << std::endl;
+                }
+                std::cout << "  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+                // In the NEXT step, we'll save 'currentInput' here.
+            } else if (!result.success && result.exitCode != 0) {
+                std::cout << "  !!! POTENTIAL ERROR DETECTED (Non-zero exit code) !!!" << std::endl;
             }
         }
         std::cout << "\nFuzzing completed.\n";
