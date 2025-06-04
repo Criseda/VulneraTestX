@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cerrno>
+#include <cstdio> // For setvbuf, NULL, _IOLBF, _IONBF
 #include <cstring>
 #include <fcntl.h>
 #include <iostream>
@@ -108,6 +109,11 @@ namespace VulneraTestX::Util {
             dup2(pipe_stderr[1], STDERR_FILENO);
             close(pipe_stderr[1]); // Close original write end
 
+            if (setvbuf(stderr, NULL, _IOLBF, 0) != 0) {
+                // Optional: Log an error if setvbuf fails, though it's unlikely to be critical.
+                // perror("child: setvbuf for stderr failed");
+            }
+
             std::vector<char*> argv_c = prepare_argv(arguments);
 
             std::vector<std::string> env_storage;
@@ -124,24 +130,24 @@ namespace VulneraTestX::Util {
                     if (path_env) {
                         std::string path_str(path_env);
                         size_t start = 0;
-                        size_t end = 0;
-                        
+                        size_t end   = 0;
+
                         while ((end = path_str.find(':', start)) != std::string::npos) {
-                            std::string dir = path_str.substr(start, end - start);
+                            std::string dir       = path_str.substr(start, end - start);
                             std::string full_path = dir + "/" + executablePath;
-                            
+
                             if (access(full_path.c_str(), X_OK) == 0) {
                                 resolved_path = full_path;
                                 break;
                             }
                             start = end + 1;
                         }
-                        
+
                         // Check last directory
                         if (resolved_path == executablePath && start < path_str.length()) {
-                            std::string dir = path_str.substr(start);
+                            std::string dir       = path_str.substr(start);
                             std::string full_path = dir + "/" + executablePath;
-                            
+
                             if (access(full_path.c_str(), X_OK) == 0) {
                                 resolved_path = full_path;
                             }
